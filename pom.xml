@@ -13,38 +13,32 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.2.51</kotlin.version>
-        <junit.version>4.12</junit.version>
         <kotlintest.version>3.0.6</kotlintest.version>
     </properties>
 
+
+    <!-- Stores project dependencies used to build the project -->
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-dynamodb</artifactId>
         </dependency>
+
+        <!-- Target the Kotlin JDK as the dynamo library requires this to be java specific (no cross compilation) -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test-junit</artifactId>
-            <version>${kotlin.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
 
+        <!-- Testing related dependencies -->
+            <!-- KotlinTest is an open source testing framework that compiles tests in Kotlin to JUnit5 tests -->
         <dependency>
             <groupId>io.kotlintest</groupId>
             <artifactId>kotlintest-core</artifactId>
             <version>${kotlintest.version}</version>
             <scope>test</scope>
+            <!-- Exclude stdlib to resolve dependency conflict; stdlib is provided by the higher level dependency -->
             <exclusions>
                 <exclusion>
                     <artifactId>kotlin-stdlib</artifactId>
@@ -57,6 +51,7 @@
             <artifactId>kotlintest-assertions</artifactId>
             <version>${kotlintest.version}</version>
             <scope>test</scope>
+            <!-- Exclude stdlib to resolve dependency conflict; stdlib is provided by the higher level dependency -->
             <exclusions>
                 <exclusion>
                     <artifactId>kotlin-stdlib</artifactId>
@@ -69,6 +64,7 @@
             <artifactId>kotlintest-runner-junit5</artifactId>
             <version>${kotlintest.version}</version>
             <scope>test</scope>
+            <!-- Exclude stdlib to resolve dependency conflict; stdlib is provided by the higher level dependency -->
             <exclusions>
                 <exclusion>
                     <artifactId>kotlin-stdlib</artifactId>
