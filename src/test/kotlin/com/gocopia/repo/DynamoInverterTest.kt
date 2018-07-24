@@ -1,6 +1,7 @@
 package com.gocopia.repo
 
 import com.amazonaws.services.dynamodbv2.document.KeyAttribute
+import com.amazonaws.services.dynamodbv2.document.QueryFilter
 import com.amazonaws.services.dynamodbv2.document.RangeKeyCondition
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec
 import io.kotlintest.forAll
@@ -59,10 +60,10 @@ class DynamoInverterTest : FunSpec() {
     }
 
     /**
-     * Handles testing range keys conditions using numbers
+     * Handles testing range keys conditions using numbers and
      */
     private fun basicRangeKeyTest() = test("Test QuerySpec with RangeKeyCondition with " +
-            "number Range Keys") {
+            "number and string range Keys") {
 
         // Define test attribute
         val testAttribute = "TestAttribute"
@@ -70,44 +71,125 @@ class DynamoInverterTest : FunSpec() {
         // Define range key condition
         val rangeKeyCondition = RangeKeyCondition(testAttribute)
 
+        // Test all common operations on numbers
+        genericBasicRangeKeyTest(rangeKeyCondition, testAttribute, listOf(12, 12.2, 12L))
+        // Define query spec for testing between
+        var qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.between(1,10 ))
+        // Assert Result is correct
+        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute BETWEEN 1 AND 10"
+
+        // Test all operations on strings
+        genericBasicRangeKeyTest(rangeKeyCondition, testAttribute, listOf("12", "12.2", "12L"))
+        // Define query spec for testing between
+        qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.between("1","10 "))
+        // Assert Result is correct
+        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute BETWEEN \'1\' AND \'10\'"
+        // Define querySpec for testing beginsWith
+        qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.beginsWith("1"))
+        // Assert Result is correct
+        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute  UNDETERMINED"
+
+    }
+
+    /**
+     * Tests basic assembly of a QuerySpec into a where clause of a SQL statement
+     */
+    private fun basicQueryFilterTest() = test("Test QuerySpec with single QueryFilter") {
+        // Define test attribute
+        val testAttribute = "TestAttribute"
+
+        val queryFilter = QueryFilter(testAttribute)
+
+
+        var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
+        qs.toSqlString(tableName)
+
+        qs = QuerySpec().withQueryFilters(queryFilter.exists())
+        qs.toSqlString(tableName)
+
+        // Test with Numbers
+        genericBasicQueryFilterTest(queryFilter, testAttribute, listOf(12, 12.1, 12L))
+
+        // Test with strings
+        genericBasicQueryFilterTest(queryFilter, testAttribute, listOf("12", "12.1", "12L"))
+    }
+
+    /**
+     * Handles testing operations for all basic logical operators that can be applied with a RangeKeyCondition (<,>, <=, =>, =)
+     */
+    private fun genericBasicRangeKeyTest(rangeKeyCondition: RangeKeyCondition, testAttribute: String, list: List<Any>) {
+
         // Iterate test cases through several possible values
-        forAll(listOf(12, 12.2, 12L)) {
+        forAll(list) {
 
             // Define query spec for testing less than equal
             var qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.le(it))
             // Assert Result is correct
-            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute <= $it"
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute <= ${it.escapeResultIfNeeded()}"
 
             // Define query spec for testing less than
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.lt(it))
             // Assert Result is correct
-            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute < $it"
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute < ${it.escapeResultIfNeeded()}"
 
             // Define query spec for testing equals
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.eq(it))
             // Assert Result is correct
-            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute = $it"
-
-            // Define query spec for testing between
-            qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.between(it, 15))
-            // Assert Result is correct
-            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute BETWEEN $it AND 15"
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute = ${it.escapeResultIfNeeded()}"
 
             // Define query spec for testing greater than
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.gt(it))
             // Assert Result is correct
-            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute > $it"
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute > ${it.escapeResultIfNeeded()}"
 
             // Define query spec for testing greater than equal
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.ge(it))
             // Assert Result is correct
-            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute => $it"
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute => ${it.escapeResultIfNeeded()}"
         }
+    }
 
-        // Define query spec
-        val qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.beginsWith("Hello"))
-        // Assert Result is correct
-        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE $testAttribute NOT SURE YET"
+    /**
+     * Handles testing operations for all basic logical operators that can be applied to a QueryFilter (<,>, <=, =>, =)
+     */
+    private fun genericBasicQueryFilterTest(queryFilter: QueryFilter, testAttribute: String, list: List<Any>) {
 
+        // Iterate test cases through several possible values
+        forAll(list) {
+            // Define query spec for testing less than equal
+            var qs = QuerySpec().withQueryFilters(queryFilter.le(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute <= ${it.escapeResultIfNeeded()}"
+
+            // Define query spec for testing less than
+            qs = QuerySpec().withQueryFilters(queryFilter.lt(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute < ${it.escapeResultIfNeeded()}"
+
+            // Define query spec for testing equals
+            qs = QuerySpec().withQueryFilters(queryFilter.eq(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute = ${it.escapeResultIfNeeded()}"
+
+            // Define query spec for testing greater than
+            qs = QuerySpec().withQueryFilters(queryFilter.gt(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute > ${it.escapeResultIfNeeded()}"
+
+            // Define query spec for testing greater than equal
+            qs = QuerySpec().withQueryFilters(queryFilter.ge(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute => ${it.escapeResultIfNeeded()}"
+        }
     }
 }
