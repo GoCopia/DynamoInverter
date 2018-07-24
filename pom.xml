@@ -22,6 +22,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-dynamodb</artifactId>
+            <version>RELEASE</version>
         </dependency>
 
         <!-- Target the Kotlin JDK as the dynamo library requires this to be java specific (no cross compilation) -->
