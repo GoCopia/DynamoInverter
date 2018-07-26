@@ -39,7 +39,7 @@ fun QuerySpec.toSqlString(tableName: String): String {
 
     // Build in optional WHERE and LIMIT clauses
     whereString?.let { sqlQueryString = "$sqlQueryString $it" }
-    //limitClause?.let { sqlQueryString = "$sqlQueryString $it" }
+    limitClause?.let { sqlQueryString = "$sqlQueryString $it" }
 
     // Return result
     return sqlQueryString

@@ -28,6 +28,10 @@ class DynamoInverterTest : FunSpec() {
         basicProjectionExpressionTest()
         basicRangeKeyTest()
         basicQueryFilterTest()
+        basicLimitTest()
+
+        // More advanced test cases
+
     }
 
     /**
@@ -116,6 +120,19 @@ class DynamoInverterTest : FunSpec() {
         // Test with strings
         genericBasicQueryFilterTest(queryFilter, testAttribute, listOf("12", "12.1", "12L"))
     }
+
+    /**
+     * Handles testing that attribute names are inserted into the SELECT portion properly
+     */
+    private fun basicLimitTest() = test("Test Query Spec with maxResultSize") {
+        // Create query spec with projection expression
+        val qs = QuerySpec().withMaxResultSize(10)
+
+        // Assert result is correct
+        println(        qs.toSqlString(tableName))
+        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName LIMIT 10"
+    }
+
 
     /**
      * Handles testing operations for all basic logical operators that can be applied with a RangeKeyCondition (<,>, <=, =>, =)
