@@ -10,19 +10,19 @@ fun QuerySpec.toSqlString(tableName: String): String {
 
     // Pull out primary key
     val hashKey = this.hashKey ?: null
-    hashKey?.let { "${it.name} = ${it.value.escapeResultIfNeeded()}" }?.let { whereStrings.add(it) }
+    hashKey?.let { "${it.name} = ${it.value.escapeIfNeeded()}" }?.let { whereStrings.add(it) }
 
 
     // Pull out other Query Filters
     this.queryFilters?.mapNotNull {
-     //   println( "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}")
-        "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}"
+        //   println( "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}")
+        "${it.attribute} ${buildWhereExpr(it.comparisonOperator, it.values)}"
 
     }?.reduceRight { s, acc -> "$acc, $s" }?.let { whereStrings.add(it) }
 
     // Pull out RangeKey conditions
     this.rangeKeyCondition?.let {
-        whereStrings.add("${it.attrName} ${buildExpr(it.keyCondition.toComparisonOperator(), it.values)}")
+        whereStrings.add("${it.attrName} ${buildWhereExpr(it.keyCondition.toComparisonOperator(), it.values)}")
     }
 
     // Build where clause
@@ -50,9 +50,9 @@ fun ScanSpec.toSqlString(tableName: String): String {
     return ""
 }
 
-private fun buildExpr(comparisonOperator: ComparisonOperator, array: Array<out Any>?): String {
+internal fun buildWhereExpr(comparisonOperator: ComparisonOperator, array: Array<out Any>?): String {
 
-    val a = array?.map { it.escapeResultIfNeeded() }?.reduceRight { any, acc -> "$any AND $acc" }
+    val a = array?.map { it.escapeIfNeeded() }?.reduceRight { any, acc -> "$any AND $acc" }
     return if(a == null){
         comparisonOperator.toSymbol()
     } else {
@@ -60,17 +60,5 @@ private fun buildExpr(comparisonOperator: ComparisonOperator, array: Array<out A
     }
 }
 
-private fun ComparisonOperator.toSymbol(): String {
-    val name = this.name
 
-    return when(name) {
-        "EQ" -> "="
-        "BETWEEN" -> name
-        "GE" -> "=>"
-        "NULL" -> "NOT EXISTS"
-        "LE" -> "<="
-        "LT" -> "<"
-        "GT" -> ">"
-        else -> throw IllegalArgumentException("$name is not a valid comparison operator")
-    }
-}
+
