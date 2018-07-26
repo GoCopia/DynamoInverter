@@ -104,6 +104,7 @@ class DynamoInverterTest : FunSpec() {
         val queryFilter = QueryFilter(testAttribute)
 
 
+        // Disabled because operators aren't supported by snowflake
 //        var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
 //        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE NOT EXISTS $testAttribute"
 //        var qs = QuerySpec().withQueryFilters(queryFilter.exists())
