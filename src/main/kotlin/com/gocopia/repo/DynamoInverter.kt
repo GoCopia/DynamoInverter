@@ -15,7 +15,7 @@ fun QuerySpec.toSqlString(tableName: String): String {
 
     // Pull out other Query Filters
     this.queryFilters?.mapNotNull {
-        println( "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}")
+     //   println( "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}")
         "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}"
 
     }?.reduceRight { s, acc -> "$acc, $s" }?.let { whereStrings.add(it) }
@@ -38,7 +38,7 @@ fun QuerySpec.toSqlString(tableName: String): String {
     var sqlQueryString = "$selectClause FROM $tableName"
 
     // Build in optional WHERE and LIMIT clauses
-    whereString?.let { sqlQueryString = "$sqlQueryString $it" }
+    whereString.let { sqlQueryString = "$sqlQueryString $it" }
     //limitClause?.let { sqlQueryString = "$sqlQueryString $it" }
 
     // Return result
@@ -51,10 +51,13 @@ fun ScanSpec.toSqlString(tableName: String): String {
 }
 
 private fun buildExpr(comparisonOperator: ComparisonOperator, array: Array<out Any>?): String {
-    println(comparisonOperator.name + array?.map { it.toString() }?.toString())
-    val a = array?.mapNotNull { it }?.reduceRight { any, acc -> "$any AND $acc" }
 
-    return "${comparisonOperator.toSymbol()}"
+    val a = array?.map { it }?.reduceRight { any, acc -> "${any.escapeResultIfNeeded()} AND $acc" }
+    return if(a == null){
+        comparisonOperator.toSymbol()
+    } else {
+        "${comparisonOperator.toSymbol()} ${a.escapeResultIfNeeded()}"
+    }
 }
 
 private fun ComparisonOperator.toSymbol(): String {
@@ -65,6 +68,9 @@ private fun ComparisonOperator.toSymbol(): String {
         "BETWEEN" -> name
         "GE" -> "=>"
         "NULL" -> "NOT EXISTS"
+        "LE" -> "<="
+        "LT" -> "<"
+        "GT" -> ">"
         else -> throw IllegalArgumentException("$name is not a valid comparison operator")
     }
 }
