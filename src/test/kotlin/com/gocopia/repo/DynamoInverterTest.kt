@@ -102,12 +102,10 @@ class DynamoInverterTest : FunSpec() {
         val queryFilter = QueryFilter(testAttribute)
 
 
-        var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
-        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE NOT EXISTS $testAttribute"
-
-
-        qs = QuerySpec().withQueryFilters(queryFilter.exists())
-        qs.toSqlString(tableName)
+//        var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
+//        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE NOT EXISTS $testAttribute"
+//        var qs = QuerySpec().withQueryFilters(queryFilter.exists())
+//        qs.toSqlString(tableName)
 
         // Test with Numbers
         genericBasicQueryFilterTest(queryFilter, testAttribute, listOf(12, 12.1, 12L))

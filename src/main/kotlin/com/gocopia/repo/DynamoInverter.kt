@@ -26,7 +26,7 @@ fun QuerySpec.toSqlString(tableName: String): String {
     }
 
     // Build where clause
-    val whereString = whereStrings.reduceRight { s, acc -> "$s, $acc" }?.let { "WHERE $it" }
+    val whereString = if(whereStrings.isNotEmpty()) whereStrings.reduceRight { s, acc -> "$s, $acc" }?.let { "WHERE $it" } else null
 
     // Pull out max result size
     val limitClause = this.maxResultSize?.let { "LIMIT $it" }
@@ -38,7 +38,7 @@ fun QuerySpec.toSqlString(tableName: String): String {
     var sqlQueryString = "$selectClause FROM $tableName"
 
     // Build in optional WHERE and LIMIT clauses
-    whereString.let { sqlQueryString = "$sqlQueryString $it" }
+    whereString?.let { sqlQueryString = "$sqlQueryString $it" }
     //limitClause?.let { sqlQueryString = "$sqlQueryString $it" }
 
     // Return result
@@ -52,11 +52,11 @@ fun ScanSpec.toSqlString(tableName: String): String {
 
 private fun buildExpr(comparisonOperator: ComparisonOperator, array: Array<out Any>?): String {
 
-    val a = array?.map { it }?.reduceRight { any, acc -> "${any.escapeResultIfNeeded()} AND $acc" }
+    val a = array?.map { it.escapeResultIfNeeded() }?.reduceRight { any, acc -> "$any AND $acc" }
     return if(a == null){
         comparisonOperator.toSymbol()
     } else {
-        "${comparisonOperator.toSymbol()} ${a.escapeResultIfNeeded()}"
+        "${comparisonOperator.toSymbol()} $a"
     }
 }
 
