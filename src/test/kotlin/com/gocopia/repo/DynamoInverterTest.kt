@@ -27,6 +27,7 @@ class DynamoInverterTest : FunSpec() {
         basicHashKeyTest()
         basicProjectionExpressionTest()
         basicRangeKeyTest()
+        basicQueryFilterTest()
     }
 
     /**
@@ -102,7 +103,8 @@ class DynamoInverterTest : FunSpec() {
 
 
         var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
-        qs.toSqlString(tableName)
+        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE NOT EXISTS $testAttribute"
+
 
         qs = QuerySpec().withQueryFilters(queryFilter.exists())
         qs.toSqlString(tableName)
