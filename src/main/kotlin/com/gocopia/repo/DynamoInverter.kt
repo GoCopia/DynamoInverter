@@ -5,23 +5,28 @@ import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator
 
 fun QuerySpec.toSqlString(tableName: String): String {
+    // Store strings that belong in the WHERE clause
+    val whereStrings = mutableListOf<String>()
+
     // Pull out primary key
     val hashKey = this.hashKey ?: null
-    val hashKeyString = hashKey?.let { "${it.name} = ${it.value}" }
+    hashKey?.let { "${it.name} = ${it.value.escapeResultIfNeeded()}" }?.let { whereStrings.add(it) }
+
 
     // Pull out other Query Filters
-    val queryFilterString = this.queryFilters?.map {
+    this.queryFilters?.mapNotNull {
+        println( "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}")
         "${it.attribute} ${buildExpr(it.comparisonOperator, it.values)}"
-    }?.reduceRight { s, acc -> "$acc, $s" }
+
+    }?.reduceRight { s, acc -> "$acc, $s" }?.let { whereStrings.add(it) }
 
     // Pull out RangeKey conditions
-    val rangeKey = this.rangeKeyCondition ?: null
-    val rangeKeyString = rangeKey?.let {
-        "${it.attrName} ${buildExpr(it.keyCondition.toComparisonOperator(), it.values)}"
+    this.rangeKeyCondition?.let {
+        whereStrings.add("${it.attrName} ${buildExpr(it.keyCondition.toComparisonOperator(), it.values)}")
     }
 
     // Build where clause
-    val whereString = listOf(hashKeyString, queryFilterString, rangeKeyString).reduceRight { s, acc -> "$s, $acc" }?.let { "WHERE $it" }
+    val whereString = whereStrings.reduceRight { s, acc -> "$s, $acc" }?.let { "WHERE $it" }
 
     // Pull out max result size
     val limitClause = this.maxResultSize?.let { "LIMIT $it" }
@@ -34,7 +39,7 @@ fun QuerySpec.toSqlString(tableName: String): String {
 
     // Build in optional WHERE and LIMIT clauses
     whereString?.let { sqlQueryString = "$sqlQueryString $it" }
-    limitClause?.let { sqlQueryString = "$sqlQueryString $it" }
+    //limitClause?.let { sqlQueryString = "$sqlQueryString $it" }
 
     // Return result
     return sqlQueryString
@@ -45,17 +50,21 @@ fun ScanSpec.toSqlString(tableName: String): String {
     return ""
 }
 
-private fun buildExpr(comparisonOperator: ComparisonOperator, array: Array<out Any>): String {
-    return "${comparisonOperator.toSymbol()} ${array.map { it }.reduceRight { any, acc -> "$any AND $acc" }}"
+private fun buildExpr(comparisonOperator: ComparisonOperator, array: Array<out Any>?): String {
+    println(comparisonOperator.name + array?.map { it.toString() }?.toString())
+    val a = array?.mapNotNull { it }?.reduceRight { any, acc -> "$any AND $acc" }
+
+    return "${comparisonOperator.toSymbol()}"
 }
 
 private fun ComparisonOperator.toSymbol(): String {
     val name = this.name
 
-    when(name) {
-        "EQ" -> return "="
-        "BETWEEN" -> return name
-        "GE" -> return "=>"
+    return when(name) {
+        "EQ" -> "="
+        "BETWEEN" -> name
+        "GE" -> "=>"
+        "NULL" -> "NOT EXISTS"
         else -> throw IllegalArgumentException("$name is not a valid comparison operator")
     }
 }
