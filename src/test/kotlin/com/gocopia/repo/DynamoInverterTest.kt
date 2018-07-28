@@ -13,7 +13,7 @@ import io.kotlintest.specs.FunSpec
  *
  * @author Mackenzie Bligh
  */
-class DynamoInverterTest : FunSpec() {
+internal class DynamoInverterTest : FunSpec() {
 
     // For storing constant values in testing; Equivalent to a final static variable in Java
     companion object {
@@ -31,9 +31,11 @@ class DynamoInverterTest : FunSpec() {
         basicLimitTest()
 
         // More advanced test cases
+        multipleQueryFilterTest()
 
     }
 
+    /*------------------------------------------- Basic Test Cases ---------------------------------------------------*/
     /**
      * Handles testing parsing QuerySpec objects with various HashKey values to SQL statements
      */
@@ -107,8 +109,7 @@ class DynamoInverterTest : FunSpec() {
 
         val queryFilter = QueryFilter(testAttribute)
 
-
-        // Disabled because operators aren't supported by snowflake
+        // TODO Disabled because operators aren't supported yet
 //        var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
 //        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE NOT EXISTS $testAttribute"
 //        var qs = QuerySpec().withQueryFilters(queryFilter.exists())
@@ -133,7 +134,33 @@ class DynamoInverterTest : FunSpec() {
         qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName LIMIT 10"
     }
 
+    /*------------------------------------------- Advanced Test Cases ------------------------------------------------*/
 
+    /**
+     * Handles testing that multiple query filters will be joined with an AND clause
+     */
+    private fun multipleQueryFilterTest() = test("test QuerySpec with multiple QueyFilters") {
+        // Define test attribute
+        val testAttribute = "TestAttribute"
+
+        val queryFilter = QueryFilter(testAttribute)
+
+
+        // Disabled because operators aren't supported by snowflake
+//        var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
+//        qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE NOT EXISTS $testAttribute"
+//        var qs = QuerySpec().withQueryFilters(queryFilter.exists())
+//        qs.toSqlString(tableName)
+
+        // Test with Numbers
+        multipleQueryFilterTest(queryFilter, "${testAttribute}1", "${testAttribute}1", listOf(12, 12.1, 12L))
+
+        // Test with strings
+        multipleQueryFilterTest(queryFilter, "${testAttribute}1", "${testAttribute}1", listOf("12", "12.1", "12L"))
+
+    }
+
+    /*---------------------------------------------- Helpers ---------------------------------------------------------*/
     /**
      * Handles testing operations for all basic logical operators that can be applied with a RangeKeyCondition (<,>, <=, =>, =)
      */
@@ -146,31 +173,31 @@ class DynamoInverterTest : FunSpec() {
             var qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.le(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute <= ${it.escapeResultIfNeeded()}"
+                    "$testAttribute <= ${it.escapeIfNeeded()}"
 
             // Define query spec for testing less than
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.lt(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute < ${it.escapeResultIfNeeded()}"
+                    "$testAttribute < ${it.escapeIfNeeded()}"
 
             // Define query spec for testing equals
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.eq(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute = ${it.escapeResultIfNeeded()}"
+                    "$testAttribute = ${it.escapeIfNeeded()}"
 
-            // Define query spec for testing greater than
+           // Define query spec for testing greater than
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.gt(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute > ${it.escapeResultIfNeeded()}"
+                    "$testAttribute > ${it.escapeIfNeeded()}"
 
             // Define query spec for testing greater than equal
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.ge(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute => ${it.escapeResultIfNeeded()}"
+                    "$testAttribute => ${it.escapeIfNeeded()}"
         }
     }
 
@@ -185,31 +212,66 @@ class DynamoInverterTest : FunSpec() {
             var qs = QuerySpec().withQueryFilters(queryFilter.le(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute <= ${it.escapeResultIfNeeded()}"
+                    "$testAttribute <= ${it.escapeIfNeeded()}"
 
             // Define query spec for testing less than
             qs = QuerySpec().withQueryFilters(queryFilter.lt(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute < ${it.escapeResultIfNeeded()}"
+                    "$testAttribute < ${it.escapeIfNeeded()}"
 
             // Define query spec for testing equals
             qs = QuerySpec().withQueryFilters(queryFilter.eq(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute = ${it.escapeResultIfNeeded()}"
+                    "$testAttribute = ${it.escapeIfNeeded()}"
+
+            // Define query spec for testing less than equal
+            qs = QuerySpec().withQueryFilters(queryFilter.ne(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute != ${it.escapeIfNeeded()}"
 
             // Define query spec for testing greater than
             qs = QuerySpec().withQueryFilters(queryFilter.gt(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute > ${it.escapeResultIfNeeded()}"
+                    "$testAttribute > ${it.escapeIfNeeded()}"
 
             // Define query spec for testing greater than equal
             qs = QuerySpec().withQueryFilters(queryFilter.ge(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute => ${it.escapeResultIfNeeded()}"
+                    "$testAttribute => ${it.escapeIfNeeded()}"
+        }
+    }
+
+    /**
+     * handles testing operations for joining query filters with an AND clause
+     */
+    private fun multipleQueryFilterTest(queryFilter: QueryFilter, testAttribute1: String, testAttribute2: String, list: List<Any>) {
+
+        // Iterate test cases through several possible values
+        forAll(list) {
+
+            // Define query spec for testing less than equal and greater than equal
+            var qs = QuerySpec().withQueryFilters(queryFilter.le(it), queryFilter.ge(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute1 <= ${it.escapeIfNeeded()} AND $testAttribute2 => ${it.escapeIfNeeded()}"
+
+            // Define query spec for testing less than and greater than
+            qs = QuerySpec().withQueryFilters(queryFilter.lt(it), queryFilter.gt(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute1 < ${it.escapeIfNeeded()} AND $testAttribute1 > ${it.escapeIfNeeded()}"
+
+            // Define query spec for testing equals and greater than
+            qs = QuerySpec().withQueryFilters(queryFilter.eq(it), queryFilter.gt(it))
+            // Assert Result is correct
+            qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
+                    "$testAttribute1 = ${it.escapeIfNeeded()} AND $testAttribute1 > ${it.escapeIfNeeded()}"
+
         }
     }
 }
