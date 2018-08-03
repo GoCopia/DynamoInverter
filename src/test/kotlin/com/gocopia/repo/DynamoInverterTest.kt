@@ -143,8 +143,8 @@ internal class DynamoInverterTest : FunSpec() {
         // Define test attribute
         val testAttribute = "TestAttribute"
 
-        val queryFilter = QueryFilter(testAttribute)
-
+        val queryFilter1 = QueryFilter(testAttribute + "1")
+        val queryFilter2 = QueryFilter(testAttribute + "2")
 
         // Disabled because operators aren't supported by snowflake
 //        var qs = QuerySpec().withQueryFilters(queryFilter.notExist())
@@ -153,10 +153,10 @@ internal class DynamoInverterTest : FunSpec() {
 //        qs.toSqlString(tableName)
 
         // Test with Numbers
-        multipleQueryFilterTest(queryFilter, "${testAttribute}1", "${testAttribute}1", listOf(12, 12.1, 12L))
+        multipleQueryFilterTest(queryFilter1, queryFilter2, "${testAttribute}1", "${testAttribute}2", listOf(12, 12.1, 12L))
 
         // Test with strings
-        multipleQueryFilterTest(queryFilter, "${testAttribute}1", "${testAttribute}1", listOf("12", "12.1", "12L"))
+        multipleQueryFilterTest(queryFilter1, queryFilter2, "${testAttribute}1", "${testAttribute}2", listOf("12", "12.1", "12L"))
 
     }
 
@@ -249,28 +249,29 @@ internal class DynamoInverterTest : FunSpec() {
     /**
      * handles testing operations for joining query filters with an AND clause
      */
-    private fun multipleQueryFilterTest(queryFilter: QueryFilter, testAttribute1: String, testAttribute2: String, list: List<Any>) {
+    private fun multipleQueryFilterTest(queryFilter1: QueryFilter, queryFilter2: QueryFilter, testAttribute1: String, testAttribute2: String, list: List<Any>) {
 
         // Iterate test cases through several possible values
-        forAll(list) {
+        (list).forEach {
 
             // Define query spec for testing less than equal and greater than equal
-            var qs = QuerySpec().withQueryFilters(queryFilter.le(it), queryFilter.ge(it))
+            var qs = QuerySpec().withQueryFilters(queryFilter1.le(it), queryFilter2.ge(it))
             // Assert Result is correct
+
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
                     "$testAttribute1 <= ${it.escapeIfNeeded()} AND $testAttribute2 => ${it.escapeIfNeeded()}"
 
             // Define query spec for testing less than and greater than
-            qs = QuerySpec().withQueryFilters(queryFilter.lt(it), queryFilter.gt(it))
+            qs = QuerySpec().withQueryFilters(queryFilter1.lt(it), queryFilter2.gt(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute1 < ${it.escapeIfNeeded()} AND $testAttribute1 > ${it.escapeIfNeeded()}"
+                    "$testAttribute1 < ${it.escapeIfNeeded()} AND $testAttribute2 > ${it.escapeIfNeeded()}"
 
             // Define query spec for testing equals and greater than
-            qs = QuerySpec().withQueryFilters(queryFilter.eq(it), queryFilter.gt(it))
+            qs = QuerySpec().withQueryFilters(queryFilter1.eq(it), queryFilter2.gt(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute1 = ${it.escapeIfNeeded()} AND $testAttribute1 > ${it.escapeIfNeeded()}"
+                    "$testAttribute1 = ${it.escapeIfNeeded()} AND $testAttribute2 > ${it.escapeIfNeeded()}"
 
         }
     }
