@@ -141,7 +141,11 @@ private fun buildWhereExpr(comparisonOperator: ComparisonOperator?, array: Array
  * @return a string of format "LIMIT size"
  */
 internal fun buildLimitClause(size: Int?): String? {
-    return size?.let { "LIMIT $it" }
+    if(size != null && size < 0) {
+        throw IllegalArgumentException("$size is not a valid size")
+    } else {
+        return size?.let { "LIMIT $it" }
+    }
 }
 
 
