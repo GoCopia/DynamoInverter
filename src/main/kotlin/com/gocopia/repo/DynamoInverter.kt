@@ -1,12 +1,9 @@
 package com.gocopia.repo
 
-import com.amazonaws.AmazonWebServiceRequest
 import com.amazonaws.services.dynamodbv2.document.internal.Filter
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec
 import com.amazonaws.services.dynamodbv2.document.spec.ScanSpec
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator
-import com.amazonaws.services.dynamodbv2.model.QueryRequest
-import com.amazonaws.services.dynamodbv2.model.ScanRequest
 
 /**
  * Translates a Dynamo QuerySpec object into a SQL compatible string that can be run using JDBC. Currently only supports
@@ -85,9 +82,15 @@ internal fun buildSqlString(projectionExpression: String?, tableName: String, wh
  * will be used
  * @param projectionExpr the values of the object stored in the DB you want returned
  * @return a string of format "SELECT projectionExpr" or "SELECT *" if projectionExpr is null
+ * @throws IllegalArgumentException if the projection expression is invalid. (Empty string or only spaces)
  */
 internal fun buildSelectFromProjectionExpr(projectionExpr: String?): String {
-    return "SELECT ${projectionExpr ?: "*"}"
+    if(projectionExpr == "" || (projectionExpr != null && projectionExpr.trim().isEmpty())) {
+        throw IllegalArgumentException("$projectionExpr is not a valid projectionExpression")
+    }
+
+    // Return result, prune leading and trailing whitespace if needed
+    return "SELECT ${projectionExpr?.trim() ?: "*"}"
 }
 
 /**
