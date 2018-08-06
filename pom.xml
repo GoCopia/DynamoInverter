@@ -3,12 +3,14 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+
     <groupId>com.gocopia.repo</groupId>
     <artifactId>DynamoInverter</artifactId>
     <version>0.1</version>
     <packaging>jar</packaging>
 
     <name>com.gocopia.repo DynamoInverter</name>
+    <description>A library for converting Dynamo Query/Scan objects into SQL Query strings used by JDBC</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,13 +18,49 @@
         <kotlintest.version>3.0.6</kotlintest.version>
     </properties>
 
+    <!-- License information -->
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <!-- Developers-->
+    <developers>
+        <developer>
+            <name>Mackenzie Bligh</name>
+            <email>mackenzie@gocopia.com</email>
+            <organization>Go Copia PBC.</organization>
+            <organizationUrl>https://gocopia.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <!-- SCM -->
+    <scm>
+        <connection>scm:git:git://github.com/GoCopia/DynamoInverter.git</connection>
+        <developerConnection>scm:git:git://github.com/GoCopia/DynamoInverter.git</developerConnection>
+        <url>scm:git:git://github.com/GoCopia/DynamoInverter/tree/master</url>
+    </scm>
+
+<!-- For uploading compiled files to maven central -->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
     <!-- Stores project dependencies used to build the project -->
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-dynamodb</artifactId>
-            <version>RELEASE</version>
+            <version>1.11.306</version>
         </dependency>
 
         <!-- Target the Kotlin JDK as the dynamo library requires this to be java specific (no cross compilation) -->
@@ -33,7 +71,7 @@
         </dependency>
 
         <!-- Testing related dependencies -->
-            <!-- KotlinTest is an open source testing framework that compiles tests in Kotlin to JUnit5 tests -->
+        <!-- KotlinTest is an open source testing framework that compiles tests in Kotlin to JUnit5 tests -->
         <dependency>
             <groupId>io.kotlintest</groupId>
             <artifactId>kotlintest-core</artifactId>
@@ -73,8 +111,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
     </dependencies>
+
+    <!-- TODO remove this as maven central doesn't like it -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>jcenter</id>
+            <name>JCenter</name>
+            <url>https://jcenter.bintray.com/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
@@ -88,7 +134,101 @@
             </extension>
         </extensions>
 
-        <plugins>
+       <plugins>
+            <!-- For actually making deployment -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+
+            <!-- Used to build documentation/javadoc -->
+            <plugin>
+                <groupId>org.jetbrains.dokka</groupId>
+                <artifactId>dokka-maven-plugin</artifactId>
+                <version>0.9.16</version>
+                <!-- Attach javadoc to resulting jar -->
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>dokka</goal>
+                            <goal>javadoc</goal>
+                            <goal>javadocJar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+
+                    <!-- Set to true to skip dokka task, default: false -->
+                    <skip>false</skip>
+
+                    <!-- Default: ${project.artifactId} -->
+                    <!-- See list of possible formats below -->
+                    <outputFormat>javadoc</outputFormat>
+                    <!-- Default: ${project.basedir}/target/dokka -->
+                    <outputDir>${project.basedir}/target</outputDir>
+
+                    <!-- Use default or set to custom path to cache directory to enable package-list caching. -->
+                    <!-- When set to default, caches stored in $USER_HOME/.cache/dokka -->
+                    <cacheRoot>default</cacheRoot>
+
+                    <!-- Used for linking to JDK, default: 6 -->
+                    <jdkVersion>8</jdkVersion>
+
+                    <!-- Do not output deprecated members, applies globally, can be overridden by packageOptions -->
+                    <skipDeprecated>false</skipDeprecated>
+                    <!-- Emit warnings about not documented members, applies globally, also can be overridden by packageOptions -->
+                    <reportNotDocumented>false</reportNotDocumented>
+                    <!-- Do not create index pages for empty packages -->
+                    <skipEmptyPackages>true</skipEmptyPackages>
+
+                    <!-- See platforms section of documentation -->
+                    <impliedPlatforms>
+                        <platform>JVM</platform>
+                    </impliedPlatforms>
+
+                    <!-- Short form list of sourceRoots, by default, set to ${project.compileSourceRoots} -->
+                    <sourceDirectories>
+                        <dir>src/main/com/gocopia/repo/</dir>
+                    </sourceDirectories>
+
+                    <!-- Specifies the location of the project source code on the Web. If provided, Dokka generates "source" links
+                         for each declaration. -->
+                    <sourceLinks>
+                        <link>
+                            <!-- Source directory -->
+                            <dir>${project.basedir}/src/main/kotlin</dir>
+                            <!-- URL showing where the source code can be accessed through the web browser -->
+                            <url>https://github.com/GoCopia/DynamoInverter</url>
+                            <!--Suffix which is used to append the line number to the URL. Use #L for GitHub -->
+                            <urlSuffix>#L</urlSuffix>
+                        </link>
+                    </sourceLinks>
+
+                    <!-- No default documentation link to kotlin-stdlib -->
+                    <noStdlibLink>false</noStdlibLink>
+                </configuration>
+            </plugin>
+
+            <!-- For attaching sources as per requirements -->
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals><goal>jar-no-fork</goal></goals>
+                    </execution>
+                </executions>
+                <version>3.0.1</version>
+            </plugin>
+
             <!-- Forces KotlinTest tests to run when mvn package is run. Provided because Kotlintest Reference.md -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -106,6 +246,7 @@
                 </dependencies>
             </plugin>
 
+            <!--Kotlin language plugin -->
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
@@ -127,7 +268,22 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- For signing artifacts -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
 </project>
