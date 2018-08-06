@@ -13,7 +13,7 @@ import io.kotlintest.specs.FunSpec
  *
  * @author Mackenzie Bligh
  */
-internal class DynamoInverterTest : FunSpec() {
+internal class QuerySpecDynamoInverterTest : FunSpec() {
 
     // For storing constant values in testing; Equivalent to a final static variable in Java
     companion object {

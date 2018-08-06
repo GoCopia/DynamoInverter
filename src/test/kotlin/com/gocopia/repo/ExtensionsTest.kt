@@ -9,7 +9,7 @@ import io.kotlintest.specs.FunSpec
  * Handles testing the misc helper functions written as Kotlin extension functions.
  * @author Mackenzie Bligh
  */
-class ExtensionsTest : FunSpec() {
+internal class ExtensionsTest : FunSpec() {
 
     // Where tests get run
     init {

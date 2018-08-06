@@ -5,7 +5,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.kotlintest.specs.FunSpec
 
-class BuildWhereFromCollectionTest : FunSpec() {
+internal class BuildWhereFromCollectionTest : FunSpec() {
 
     init {
         testBuildingSimpleWhere()

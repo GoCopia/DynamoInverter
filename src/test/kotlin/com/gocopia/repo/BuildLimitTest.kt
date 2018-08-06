@@ -8,7 +8,7 @@ import io.kotlintest.specs.FunSpec
  * Handles testing building of the LIMIT clause of SQL statements from a Dynamo with max results size
  * @author Mackenzie Bligh
  */
-class BuildLimitTest : FunSpec() {
+internal class BuildLimitTest : FunSpec() {
 
     // Where tests get run
     init {

@@ -8,7 +8,7 @@ import io.kotlintest.specs.FunSpec
  * Handles testing building of the SELECT clause of SQL statements from a Dynamo projection expression
  * @author Mackenzie Bligh
  */
-class BuildSelectTest: FunSpec() {
+internal class BuildSelectTest: FunSpec() {
 
     // Where tests get run
     init {
