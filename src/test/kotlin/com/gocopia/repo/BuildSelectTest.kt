@@ -5,7 +5,7 @@ import io.kotlintest.shouldThrow
 import io.kotlintest.specs.FunSpec
 
 /**
- * Handles testing building of the SELECT clause of SQL statments from a Dynamo projection expression
+ * Handles testing building of the SELECT clause of SQL statements from a Dynamo projection expression
  * @author Mackenzie Bligh
  */
 class BuildSelectTest: FunSpec() {
