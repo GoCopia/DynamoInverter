@@ -119,7 +119,7 @@ private fun buildWhereExpr(comparisonOperator: ComparisonOperator?, array: Array
 
     // Check if comparison operator is valid
     if(comparisonOperator == null) {
-        return null
+        throw IllegalStateException("Comparison operator not assigned")
     }
 
     // Build up values; this is for operations like BETWEEN that contain two values in array. Most comparison operators
@@ -147,7 +147,3 @@ internal fun buildLimitClause(size: Int?): String? {
         return size?.let { "LIMIT $it" }
     }
 }
-
-
-
-

@@ -2,6 +2,7 @@ package com.gocopia.repo
 
 import com.amazonaws.services.dynamodbv2.document.QueryFilter
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import io.kotlintest.specs.FunSpec
 
 class BuildWhereFromCollectionTest : FunSpec() {
@@ -16,7 +17,9 @@ class BuildWhereFromCollectionTest : FunSpec() {
         val symbols = SymbolMap.symbols.keys.
             mapIndexed {
                     index, _ -> listOf(QueryFilter("$attributeName$index"))
-            }
+            }.toMutableList()
+
+        symbols.add(listOf())
 
         // Generate data
         val comparisonAmount = 1
@@ -36,6 +39,11 @@ class BuildWhereFromCollectionTest : FunSpec() {
         symbols[4].buildWhereExpr() shouldBe "${attributeName}4 < $comparisonAmount"
         symbols[5].buildWhereExpr() shouldBe "${attributeName}5 > $comparisonAmount"
         symbols[6].buildWhereExpr() shouldBe "${attributeName}6 != $comparisonAmount"
+
+        // Test for comparison operator not being assigned
+        shouldThrow<IllegalStateException> {
+            listOf(QueryFilter(attributeName)).buildWhereExpr()
+        }
     }
 
     private fun testBuildingWhereWithAnd() = test("Test building where expression with AND") {
