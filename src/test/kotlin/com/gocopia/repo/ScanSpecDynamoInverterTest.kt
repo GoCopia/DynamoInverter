@@ -111,7 +111,7 @@ internal class ScanSpecDynamoInverterTest: FunSpec() {
 
     /*---------------------------------------------- Helpers ---------------------------------------------------------*/
    /**
-     * Handles testing operations for all basic logical operators that can be applied to a QueryFilter (<,>, <=, =>, =)
+     * Handles testing operations for all basic logical operators that can be applied to a QueryFilter (<,>, <=, >=, =)
      */
     private fun genericBasicScanFilterTest(queryFilter: ScanFilter, testAttribute: String, list: List<Any>) {
 
@@ -151,7 +151,7 @@ internal class ScanSpecDynamoInverterTest: FunSpec() {
             ss = ScanSpec().withScanFilters(queryFilter.ge(it))
             // Assert Result is correct
             ss.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute => ${it.escapeIfNeeded()}"
+                    "$testAttribute >= ${it.escapeIfNeeded()}"
         }
     }
 
@@ -168,7 +168,7 @@ internal class ScanSpecDynamoInverterTest: FunSpec() {
             // Assert Result is correct
 
             ss.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute1 <= ${it.escapeIfNeeded()} AND $testAttribute2 => ${it.escapeIfNeeded()}"
+                    "$testAttribute1 <= ${it.escapeIfNeeded()} AND $testAttribute2 >= ${it.escapeIfNeeded()}"
 
             // Define query spec for testing less than and greater than
             ss = ScanSpec().withScanFilters(scanFilter1.lt(it), scanFilter2.gt(it))

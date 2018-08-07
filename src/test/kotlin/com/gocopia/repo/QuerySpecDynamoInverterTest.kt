@@ -162,7 +162,7 @@ internal class QuerySpecDynamoInverterTest : FunSpec() {
 
     /*---------------------------------------------- Helpers ---------------------------------------------------------*/
     /**
-     * Handles testing operations for all basic logical operators that can be applied with a RangeKeyCondition (<,>, <=, =>, =)
+     * Handles testing operations for all basic logical operators that can be applied with a RangeKeyCondition (<,>, <=, >=, =)
      */
     private fun genericBasicRangeKeyTest(rangeKeyCondition: RangeKeyCondition, testAttribute: String, list: List<Any>) {
 
@@ -197,12 +197,12 @@ internal class QuerySpecDynamoInverterTest : FunSpec() {
             qs = QuerySpec().withRangeKeyCondition(rangeKeyCondition.ge(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute => ${it.escapeIfNeeded()}"
+                    "$testAttribute >= ${it.escapeIfNeeded()}"
         }
     }
 
     /**
-     * Handles testing operations for all basic logical operators that can be applied to a QueryFilter (<,>, <=, =>, =)
+     * Handles testing operations for all basic logical operators that can be applied to a QueryFilter (<,>, <=, >=, =)
      */
     private fun genericBasicQueryFilterTest(queryFilter: QueryFilter, testAttribute: String, list: List<Any>) {
 
@@ -242,7 +242,7 @@ internal class QuerySpecDynamoInverterTest : FunSpec() {
             qs = QuerySpec().withQueryFilters(queryFilter.ge(it))
             // Assert Result is correct
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute => ${it.escapeIfNeeded()}"
+                    "$testAttribute >= ${it.escapeIfNeeded()}"
         }
     }
 
@@ -259,7 +259,7 @@ internal class QuerySpecDynamoInverterTest : FunSpec() {
             // Assert Result is correct
 
             qs.toSqlString(tableName) shouldBe "SELECT * FROM $tableName WHERE " +
-                    "$testAttribute1 <= ${it.escapeIfNeeded()} AND $testAttribute2 => ${it.escapeIfNeeded()}"
+                    "$testAttribute1 <= ${it.escapeIfNeeded()} AND $testAttribute2 >= ${it.escapeIfNeeded()}"
 
             // Define query spec for testing less than and greater than
             qs = QuerySpec().withQueryFilters(queryFilter1.lt(it), queryFilter2.gt(it))

@@ -19,8 +19,6 @@ internal class BuildWhereFromCollectionTest : FunSpec() {
                     index, _ -> listOf(QueryFilter("$attributeName$index"))
             }.toMutableList()
 
-        symbols.add(listOf())
-
         // Generate data
         val comparisonAmount = 1
         symbols[0][0].eq(comparisonAmount)
@@ -34,7 +32,7 @@ internal class BuildWhereFromCollectionTest : FunSpec() {
         // Test values are correct
         symbols[0].buildWhereExpr() shouldBe "${attributeName}0 = $comparisonAmount"
         symbols[1].buildWhereExpr() shouldBe "${attributeName}1 BETWEEN $comparisonAmount AND 2"
-        symbols[2].buildWhereExpr() shouldBe "${attributeName}2 => $comparisonAmount"
+        symbols[2].buildWhereExpr() shouldBe "${attributeName}2 >= $comparisonAmount"
         symbols[3].buildWhereExpr() shouldBe "${attributeName}3 <= $comparisonAmount"
         symbols[4].buildWhereExpr() shouldBe "${attributeName}4 < $comparisonAmount"
         symbols[5].buildWhereExpr() shouldBe "${attributeName}5 > $comparisonAmount"
@@ -74,7 +72,7 @@ internal class BuildWhereFromCollectionTest : FunSpec() {
 
         symbols[1].buildWhereExpr() shouldBe "${attributeName}1 BETWEEN $comparisonAmount1 AND 2 AND ${attributeName}1 = $comparisonAmount2"
 
-        symbols[2].buildWhereExpr() shouldBe "${attributeName}2 => $comparisonAmount1 AND ${attributeName}2 <= $comparisonAmount2"
+        symbols[2].buildWhereExpr() shouldBe "${attributeName}2 >= $comparisonAmount1 AND ${attributeName}2 <= $comparisonAmount2"
 
         symbols[3].buildWhereExpr() shouldBe "${attributeName}3 > $comparisonAmount1 AND ${attributeName}2 < $comparisonAmount2"
     }

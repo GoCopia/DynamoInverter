@@ -30,7 +30,7 @@ object SymbolMap {
         mapOf(
             "EQ" to "=",
             "BETWEEN" to "BETWEEN",
-            "GE" to "=>",
+            "GE" to ">=",
             "LE" to "<=",
             "LT" to "<",
             "GT" to ">",

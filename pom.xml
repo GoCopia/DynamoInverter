@@ -148,75 +148,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Used to build documentation/javadoc -->
-            <plugin>
-                <groupId>org.jetbrains.dokka</groupId>
-                <artifactId>dokka-maven-plugin</artifactId>
-                <version>0.9.16</version>
-                <!-- Attach javadoc to resulting jar -->
-                <executions>
-                    <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>dokka</goal>
-                            <goal>javadoc</goal>
-                            <goal>javadocJar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-
-                    <!-- Set to true to skip dokka task, default: false -->
-                    <skip>false</skip>
-
-                    <!-- Default: ${project.artifactId} -->
-                    <!-- See list of possible formats below -->
-                    <outputFormat>javadoc</outputFormat>
-                    <!-- Default: ${project.basedir}/target/dokka -->
-                    <outputDir>${project.basedir}/target</outputDir>
-
-                    <!-- Use default or set to custom path to cache directory to enable package-list caching. -->
-                    <!-- When set to default, caches stored in $USER_HOME/.cache/dokka -->
-                    <cacheRoot>default</cacheRoot>
-
-                    <!-- Used for linking to JDK, default: 6 -->
-                    <jdkVersion>8</jdkVersion>
-
-                    <!-- Do not output deprecated members, applies globally, can be overridden by packageOptions -->
-                    <skipDeprecated>false</skipDeprecated>
-                    <!-- Emit warnings about not documented members, applies globally, also can be overridden by packageOptions -->
-                    <reportNotDocumented>false</reportNotDocumented>
-                    <!-- Do not create index pages for empty packages -->
-                    <skipEmptyPackages>true</skipEmptyPackages>
-
-                    <!-- See platforms section of documentation -->
-                    <impliedPlatforms>
-                        <platform>JVM</platform>
-                    </impliedPlatforms>
-
-                    <!-- Short form list of sourceRoots, by default, set to ${project.compileSourceRoots} -->
-                    <sourceDirectories>
-                        <dir>src/main/com/gocopia/repo/</dir>
-                    </sourceDirectories>
-
-                    <!-- Specifies the location of the project source code on the Web. If provided, Dokka generates "source" links
-                         for each declaration. -->
-                    <sourceLinks>
-                        <link>
-                            <!-- Source directory -->
-                            <dir>${project.basedir}/src/main/kotlin</dir>
-                            <!-- URL showing where the source code can be accessed through the web browser -->
-                            <url>https://github.com/GoCopia/DynamoInverter</url>
-                            <!--Suffix which is used to append the line number to the URL. Use #L for GitHub -->
-                            <urlSuffix>#L</urlSuffix>
-                        </link>
-                    </sourceLinks>
-
-                    <!-- No default documentation link to kotlin-stdlib -->
-                    <noStdlibLink>false</noStdlibLink>
-                </configuration>
-            </plugin>
-
             <!-- For attaching sources as per requirements -->
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
@@ -229,7 +160,8 @@
                 <version>3.0.1</version>
             </plugin>
 
-            <!-- Forces KotlinTest tests to run when mvn package is run. Provided because Kotlintest Reference.md -->
+
+           <!-- Forces KotlinTest tests to run when mvn package is run. Provided because Kotlintest Reference.md -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -269,21 +201,6 @@
                 </executions>
             </plugin>
 
-            <!-- For signing artifacts -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+       </plugins>
     </build>
 </project>
