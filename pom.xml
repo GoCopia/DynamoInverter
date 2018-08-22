@@ -45,14 +45,22 @@
 
 <!-- For uploading compiled files to maven central -->
     <distributionManagement>
-        <snapshotRepository>
+<!--        <snapshotRepository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository> -->
+
+    <!-- Used to deploy basis to an S3 Repo -->
+        <repository>
+            <id>gocopia-repo</id>
+            <name>Copia Repository</name>
+            <url>s3://repo.gocopia.com/</url>
         </repository>
+
     </distributionManagement>
 
     <!-- Stores project dependencies used to build the project -->
@@ -135,19 +143,6 @@
         </extensions>
 
        <plugins>
-            <!-- For actually making deployment -->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
-
             <!-- For attaching sources as per requirements -->
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
@@ -200,7 +195,6 @@
                     </execution>
                 </executions>
             </plugin>
-
        </plugins>
     </build>
 </project>
